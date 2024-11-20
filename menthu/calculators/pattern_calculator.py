@@ -73,12 +73,21 @@ class PatternScoreCalculator:
                         seq_record: SeqRecord, start_coord: int) -> List[Dict]:
         """
         Process PAM site and identify microhomology patterns.
-        """
-        if strand == '-':
-            dsb_site = pos + 6
-        else:
-            dsb_site = pos - 3
         
+        Args:
+            pos: PAM site position (already converted to equivalent coordinate system)
+            strand: Strand orientation ('+' or '-')
+            spacer_seq: Spacer sequence
+            pam_seq: PAM sequence
+            seq_record: Sequence record
+            start_coord: Starting coordinate in reference sequence
+        """
+        # Nの位置から切断点までの距離は常に±3
+        if strand == '+':
+            dsb_site = pos - 3
+        else:
+            dsb_site = pos + 3
+            
         dsb_idx = dsb_site - start_coord
         seq_len = len(seq_record.seq)
         
@@ -123,7 +132,7 @@ class PatternScoreCalculator:
                 'pattern_info': pattern_info,
                 'search_range': self.search_range,
             })
-            
+        
         return patterns
 
     def calculate_pattern_score(self, del_length: int, gc_count: int, mh_length: int) -> float:

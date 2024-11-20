@@ -52,23 +52,26 @@ class MenthuScoreCalculator:
         )
 
     def _process_forward_strand(self) -> None:
-        """Process PAM sites on forward strand."""
+        """Process PAM sites on forward strand using find_pam_sites function."""
         sequence_str = str(self.trimmed_record.seq)
-        pam_sites = find_pam_sites(sequence_str, start_coord=self.start_coord, pam=self.pam)
         
-        for absolute_position, spacer, pam_seq in pam_sites:
+        # Forward sitesとReverse sitesを両方取得して、Forward sitesのみを使用
+        forward_sites, _ = find_pam_sites(sequence_str, start_coord=self.start_coord, pam=self.pam)
+        
+        for absolute_position, spacer, pam_seq in forward_sites:
+            # Ensure 'N' is not present in the spacer sequence
             if 'N' not in spacer:
                 self._process_pam_site(absolute_position, '+', spacer, pam_seq)
 
     def _process_reverse_strand(self) -> None:
-        """Process PAM sites on reverse strand."""
-        rev_comp = str(self.trimmed_record.seq.reverse_complement())
-        pam_sites = find_pam_sites(rev_comp, start_coord=self.start_coord, pam=self.pam)
+        """Process PAM sites on reverse strand using find_pam_sites function."""
+        sequence_str = str(self.trimmed_record.seq)
         
-        for absolute_position, spacer, pam_seq in pam_sites:
-            position = len(self.trimmed_record.seq) - (absolute_position - self.start_coord) - len(self.pam)
-            absolute_position = self.start_coord + position
-            
+        # Forward sitesとReverse sitesを両方取得して、Reverse sitesのみを使用
+        _, reverse_sites = find_pam_sites(sequence_str, start_coord=self.start_coord, pam=self.pam)
+        
+        for absolute_position, spacer, pam_seq in reverse_sites:
+            # Ensure 'N' is not present in the spacer sequence
             if 'N' not in spacer:
                 self._process_pam_site(absolute_position, '-', spacer, pam_seq)
 
